@@ -1,0 +1,625 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Ripple — Video Calling</title>
+<style>
+  :root{
+    --bg-deep:#0B141A;
+    --bg-panel:#111B21;
+    --bg-raised:#202C33;
+    --teal:#00A884;
+    --teal-bright:#25D366;
+    --text-primary:#E9EDEF;
+    --text-secondary:#8696A0;
+    --danger:#F15C6D;
+    --danger-bright:#FF6B7A;
+    --border:#2A3942;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  html,body{height:100%;}
+  body{
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    background:var(--bg-deep);
+    color:var(--text-primary);
+    height:100vh;
+    overflow:hidden;
+    -webkit-font-smoothing:antialiased;
+  }
+  #app{height:100%; position:relative;}
+
+  /* ---------- shared ---------- */
+  .screen{
+    position:absolute; inset:0;
+    display:flex; flex-direction:column;
+    align-items:center; justify-content:center;
+    transition:opacity .35s ease;
+  }
+  .hidden{display:none !important;}
+
+  /* ---------- HOME ---------- */
+  #home{padding:24px;}
+  .home-inner{width:100%; max-width:380px; text-align:center;}
+  .logo{
+    width:64px; height:64px; margin:0 auto 18px;
+    border-radius:20px;
+    background:linear-gradient(135deg,var(--teal),var(--teal-bright));
+    display:flex; align-items:center; justify-content:center;
+    box-shadow:0 8px 30px rgba(0,168,132,.35);
+  }
+  .logo svg{width:30px; height:30px;}
+  h1{
+    font-size:26px; font-weight:700; letter-spacing:-0.02em;
+    margin-bottom:6px;
+  }
+  .tagline{
+    color:var(--text-secondary); font-size:14px; margin-bottom:36px;
+    letter-spacing:.01em;
+  }
+  .card{
+    background:var(--bg-panel);
+    border:1px solid var(--border);
+    border-radius:16px;
+    padding:22px;
+    margin-bottom:14px;
+    text-align:left;
+  }
+  .card-label{
+    font-size:11px; text-transform:uppercase; letter-spacing:.09em;
+    color:var(--text-secondary); font-weight:600; margin-bottom:12px;
+  }
+  .btn{
+    width:100%; border:none; border-radius:12px; padding:14px 18px;
+    font-size:15px; font-weight:600; cursor:pointer;
+    display:flex; align-items:center; justify-content:center; gap:8px;
+    transition:transform .12s ease, filter .12s ease;
+    font-family:inherit;
+  }
+  .btn:active{transform:scale(.98);}
+  .btn-primary{
+    background:linear-gradient(135deg,var(--teal),var(--teal-bright));
+    color:#08201A;
+  }
+  .btn-primary:hover{filter:brightness(1.08);}
+  .btn-secondary{
+    background:var(--bg-raised); color:var(--text-primary);
+    border:1px solid var(--border);
+  }
+  .btn-secondary:hover{border-color:var(--teal);}
+  .join-row{display:flex; gap:8px;}
+  .code-input{
+    flex:1; background:var(--bg-raised); border:1px solid var(--border);
+    border-radius:12px; padding:14px 16px; color:var(--text-primary);
+    font-size:18px; letter-spacing:.18em; text-align:center;
+    font-family:"SF Mono",SFMono-Regular,Consolas,monospace;
+    text-transform:uppercase;
+  }
+  .code-input:focus{outline:none; border-color:var(--teal);}
+  .code-input::placeholder{letter-spacing:.05em; color:#556570; font-family:inherit;}
+  .divider{
+    display:flex; align-items:center; gap:12px; color:var(--text-secondary);
+    font-size:12px; margin:18px 0; text-transform:uppercase; letter-spacing:.08em;
+  }
+  .divider::before, .divider::after{content:""; flex:1; height:1px; background:var(--border);}
+  .foot-note{color:var(--text-secondary); font-size:12px; margin-top:22px; line-height:1.6;}
+  .foot-note b{color:var(--text-primary);}
+
+  /* ---------- WAITING / RINGING ---------- */
+  #waiting{padding:24px; text-align:center;}
+  .ripple-wrap{
+    position:relative; width:160px; height:160px; margin:0 auto 30px;
+    display:flex; align-items:center; justify-content:center;
+  }
+  .ripple-ring{
+    position:absolute; border-radius:50%;
+    border:2px solid var(--teal);
+    width:100%; height:100%;
+    opacity:0;
+    animation:ripple 2.4s ease-out infinite;
+  }
+  .ripple-ring:nth-child(2){animation-delay:.6s;}
+  .ripple-ring:nth-child(3){animation-delay:1.2s;}
+  @keyframes ripple{
+    0%{transform:scale(.5); opacity:.7;}
+    100%{transform:scale(1); opacity:0;}
+  }
+  .ripple-core{
+    width:84px; height:84px; border-radius:50%;
+    background:linear-gradient(135deg,var(--teal),var(--teal-bright));
+    display:flex; align-items:center; justify-content:center;
+    box-shadow:0 8px 30px rgba(0,168,132,.4);
+    z-index:2;
+  }
+  .ripple-core svg{width:34px; height:34px;}
+  .status-text{font-size:16px; font-weight:600; margin-bottom:8px;}
+  .status-sub{color:var(--text-secondary); font-size:13px; margin-bottom:26px;}
+  .code-display{
+    display:inline-flex; align-items:center; gap:12px;
+    background:var(--bg-panel); border:1px solid var(--border);
+    border-radius:14px; padding:14px 20px; margin-bottom:24px;
+  }
+  .code-display .code{
+    font-family:"SF Mono",SFMono-Regular,Consolas,monospace;
+    font-size:22px; letter-spacing:.2em; font-weight:700;
+  }
+  .icon-btn{
+    background:var(--bg-raised); border:1px solid var(--border);
+    border-radius:10px; width:38px; height:38px;
+    display:flex; align-items:center; justify-content:center;
+    cursor:pointer; color:var(--text-primary);
+  }
+  .icon-btn:hover{border-color:var(--teal);}
+  .icon-btn svg{width:16px; height:16px;}
+
+  /* ---------- CALL SCREEN ---------- */
+  #call{background:#000; display:block;}
+  #remoteVideo{
+    width:100%; height:100%; object-fit:cover;
+    background:radial-gradient(circle at 50% 40%, #16232B 0%, #0B141A 70%);
+  }
+  .remote-placeholder{
+    position:absolute; inset:0; display:flex; flex-direction:column;
+    align-items:center; justify-content:center; gap:16px;
+    pointer-events:none;
+  }
+  .placeholder-avatar{
+    width:96px; height:96px; border-radius:50%;
+    background:linear-gradient(135deg,var(--bg-raised),var(--bg-panel));
+    border:1px solid var(--border);
+    display:flex; align-items:center; justify-content:center;
+  }
+  .placeholder-avatar svg{width:40px; height:40px; color:var(--text-secondary);}
+
+  #localVideo{
+    position:absolute; top:20px; right:20px;
+    width:110px; height:150px; border-radius:14px; object-fit:cover;
+    background:#1c2830; border:2px solid rgba(255,255,255,.12);
+    box-shadow:0 6px 24px rgba(0,0,0,.5);
+    transform:scaleX(-1);
+    z-index:5;
+  }
+  .top-bar{
+    position:absolute; top:0; left:0; right:0; padding:20px;
+    display:flex; align-items:center; justify-content:space-between;
+    background:linear-gradient(to bottom, rgba(0,0,0,.55), transparent);
+    z-index:4;
+  }
+  .call-status{
+    display:flex; align-items:center; gap:8px;
+    font-size:13px; color:var(--text-primary);
+    background:rgba(0,0,0,.35); padding:8px 14px; border-radius:20px;
+    backdrop-filter:blur(6px);
+  }
+  .status-dot{width:7px; height:7px; border-radius:50%; background:#F5C142;}
+  .status-dot.connected{background:var(--teal-bright);}
+  .timer{
+    font-family:"SF Mono",SFMono-Regular,Consolas,monospace; font-size:13px;
+    color:var(--text-secondary);
+  }
+  .controls{
+    position:absolute; bottom:0; left:0; right:0; padding:28px 20px 34px;
+    display:flex; align-items:center; justify-content:center; gap:18px;
+    background:linear-gradient(to top, rgba(0,0,0,.6), transparent);
+    z-index:4;
+  }
+  .ctrl-btn{
+    width:56px; height:56px; border-radius:50%; border:none; cursor:pointer;
+    background:rgba(255,255,255,.12); color:var(--text-primary);
+    display:flex; align-items:center; justify-content:center;
+    backdrop-filter:blur(8px);
+    transition:transform .12s ease, background .15s ease;
+  }
+  .ctrl-btn:hover{transform:translateY(-2px);}
+  .ctrl-btn.active-off{background:rgba(255,255,255,.9); color:#111;}
+  .ctrl-btn svg{width:22px; height:22px;}
+  .ctrl-btn.end-call{
+    width:64px; height:64px;
+    background:var(--danger);
+  }
+  .ctrl-btn.end-call:hover{background:var(--danger-bright);}
+
+  @media (max-width:480px){
+    #localVideo{width:84px; height:114px; top:14px; right:14px;}
+    .ctrl-btn{width:50px; height:50px;}
+    .ctrl-btn.end-call{width:58px; height:58px;}
+  }
+
+  .toast{
+    position:absolute; bottom:24px; left:50%; transform:translateX(-50%);
+    background:var(--bg-raised); border:1px solid var(--border);
+    padding:10px 18px; border-radius:10px; font-size:13px;
+    opacity:0; pointer-events:none; transition:opacity .25s ease;
+    z-index:10;
+  }
+  .toast.show{opacity:1;}
+</style>
+</head>
+<body>
+<div id="app">
+
+  <!-- HOME -->
+  <div id="home" class="screen">
+    <div class="home-inner">
+      <div class="logo">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#08201A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 7l-7 5 7 5V7z"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg>
+      </div>
+      <h1>Ripple</h1>
+      <p class="tagline">Crisp, free, peer-to-peer video calls — anywhere in the world.</p>
+
+      <div class="card">
+        <div class="card-label">Start a new call</div>
+        <button class="btn btn-primary" id="startCallBtn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 7l-7 5 7 5V7z"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg>
+          Create a room
+        </button>
+      </div>
+
+      <div class="divider">or</div>
+
+      <div class="card">
+        <div class="card-label">Join with a code</div>
+        <div class="join-row">
+          <input id="joinCodeInput" class="code-input" placeholder="ROOM CODE" maxlength="6" autocomplete="off" autocapitalize="characters">
+          <button class="btn btn-secondary" id="joinCallBtn" style="width:auto; padding:14px 20px;">Join</button>
+        </div>
+      </div>
+
+      <p class="foot-note">Works globally over the open internet using <b>WebRTC</b> with free STUN/TURN relays — no accounts, no servers to manage, nothing installed.</p>
+    </div>
+  </div>
+
+  <!-- WAITING / CONNECTING -->
+  <div id="waiting" class="screen hidden">
+    <div class="ripple-wrap">
+      <div class="ripple-ring"></div>
+      <div class="ripple-ring"></div>
+      <div class="ripple-ring"></div>
+      <div class="ripple-core">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#08201A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07 19.5 19.5 0 01-6-6 19.79 19.79 0 01-3.07-8.67A2 2 0 014.11 2h3a2 2 0 012 1.72c.127.96.362 1.902.7 2.81a2 2 0 01-.45 2.11L8.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.908.338 1.85.573 2.81.7A2 2 0 0122 16.92z"/></svg>
+      </div>
+    </div>
+    <div class="status-text" id="waitingStatus">Setting up your room…</div>
+    <div class="status-sub" id="waitingSub">Getting camera and microphone ready</div>
+
+    <div class="code-display hidden" id="codeDisplay">
+      <span class="code" id="roomCodeText">------</span>
+      <button class="icon-btn" id="copyCodeBtn" title="Copy code">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+      </button>
+    </div>
+    <br>
+    <button class="btn btn-secondary" id="cancelWaitBtn" style="width:auto; padding:12px 28px;">Cancel</button>
+  </div>
+
+  <!-- CALL -->
+  <div id="call" class="screen hidden">
+    <video id="remoteVideo" autoplay playsinline></video>
+    <div class="remote-placeholder hidden" id="remotePlaceholder">
+      <div class="placeholder-avatar">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+      </div>
+      <div class="status-sub">Waiting for video…</div>
+    </div>
+    <video id="localVideo" autoplay playsinline muted></video>
+
+    <div class="top-bar">
+      <div class="call-status">
+        <span class="status-dot" id="callStatusDot"></span>
+        <span id="callStatusText">Connecting…</span>
+      </div>
+      <div class="timer hidden" id="callTimer">00:00</div>
+    </div>
+
+    <div class="controls">
+      <button class="ctrl-btn" id="toggleMicBtn" title="Mute">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 1a3 3 0 00-3 3v8a3 3 0 006 0V4a3 3 0 00-3-3z"/><path d="M19 10v2a7 7 0 01-14 0v-2M12 19v4M8 23h8"/></svg>
+      </button>
+      <button class="ctrl-btn end-call" id="endCallBtn" title="End call">
+        <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" transform="rotate(135 12 12)"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07 19.5 19.5 0 01-6-6 19.79 19.79 0 01-3.07-8.67A2 2 0 014.11 2h3a2 2 0 012 1.72c.127.96.362 1.902.7 2.81a2 2 0 01-.45 2.11L8.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.908.338 1.85.573 2.81.7A2 2 0 0122 16.92z"/></svg>
+      </button>
+      <button class="ctrl-btn" id="toggleCamBtn" title="Turn camera off">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 7l-7 5 7 5V7z"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg>
+      </button>
+    </div>
+
+    <div class="toast" id="toast"></div>
+  </div>
+
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/peerjs/1.5.4/peerjs.min.js"></script>
+<script>
+(function(){
+  "use strict";
+
+  // ---------- ICE servers: free STUN (Google) + free TURN relay (Open Relay Project) ----------
+  // TURN is essential for calling across the open internet — many networks (mobile carriers,
+  // corporate firewalls, symmetric NATs) block direct peer-to-peer STUN connections, so
+  // without a relay the call would only work between simple home networks.
+  const ICE_SERVERS = {
+    iceServers: [
+      { urls: "stun:stun.l.google.com:19302" },
+      { urls: "stun:stun1.l.google.com:19302" },
+      { urls: "turn:openrelay.metered.ca:80", username: "openrelayproject", credential: "openrelayproject" },
+      { urls: "turn:openrelay.metered.ca:443", username: "openrelayproject", credential: "openrelayproject" },
+      { urls: "turn:openrelay.metered.ca:443?transport=tcp", username: "openrelayproject", credential: "openrelayproject" }
+    ]
+  };
+
+  // PeerJS's free public cloud broker handles connection setup (offer/answer/ICE exchange)
+  // over the open internet, so this page works as a plain static file hosted anywhere —
+  // both people just need to open the same URL, from anywhere in the world.
+  const ROOM_PREFIX = "ripple-"; // namespaces our room codes on the shared public broker
+
+  let peer = null;
+  let mediaConn = null;
+  let localStream = null;
+  let roomCode = null;
+  let role = null; // 'caller' | 'callee'
+  let micOn = true, camOn = true;
+  let callTimerInterval = null, callSeconds = 0;
+  let hasRemoteVideo = false;
+  let mediaMode = "none"; // 'full' | 'audio-only' | 'video-only' | 'none'
+
+  // ---------- elements ----------
+  const $ = id => document.getElementById(id);
+  const screens = { home: $("home"), waiting: $("waiting"), call: $("call") };
+  const localVideo = $("localVideo");
+  const remoteVideo = $("remoteVideo");
+  const remotePlaceholder = $("remotePlaceholder");
+
+  function showScreen(name){
+    Object.values(screens).forEach(s => s.classList.add("hidden"));
+    screens[name].classList.remove("hidden");
+  }
+
+  function toast(msg, ms=2600){
+    const t = $("toast");
+    t.textContent = msg;
+    t.classList.add("show");
+    clearTimeout(t._timer);
+    t._timer = setTimeout(()=>t.classList.remove("show"), ms);
+  }
+
+  function genCode(){
+    const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"; // no ambiguous chars
+    let c = "";
+    for(let i=0;i<6;i++) c += chars[Math.floor(Math.random()*chars.length)];
+    return c;
+  }
+
+  // ---------- media ----------
+  // Tries camera+mic first, then falls back gracefully (audio-only, video-only, or
+  // no-device "receive only" mode) instead of blocking the whole app on one error.
+  async function tryGetUserMedia(constraints){
+    try{ return await navigator.mediaDevices.getUserMedia(constraints); }
+    catch(e){ return null; }
+  }
+
+  async function getMedia(){
+    if(!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia){
+      toast("This browser doesn't support camera/mic access.");
+      mediaMode = "none";
+      return true; // still allow a receive-only call
+    }
+
+    const videoAudio = { video:{width:{ideal:1280},height:{ideal:720},frameRate:{ideal:30}}, audio:{echoCancellation:true,noiseSuppression:true,autoGainControl:true} };
+
+    localStream = await tryGetUserMedia(videoAudio);
+    if(localStream){ mediaMode = "full"; }
+
+    if(!localStream){
+      localStream = await tryGetUserMedia({ audio:true });
+      if(localStream){ mediaMode = "audio-only"; toast("No camera found — joining with audio only."); }
+    }
+
+    if(!localStream){
+      localStream = await tryGetUserMedia({ video:true });
+      if(localStream){ mediaMode = "video-only"; toast("No microphone found — joining with video only."); }
+    }
+
+    if(!localStream){
+      mediaMode = "none";
+      toast("No camera or microphone found — joining as viewer only.");
+    }
+
+    if(localStream){
+      localVideo.srcObject = localStream;
+    } else {
+      localVideo.classList.add("hidden");
+    }
+
+    return true;
+  }
+
+  function setCallStatus(text, connected){
+    $("callStatusText").textContent = text;
+    $("callStatusDot").classList.toggle("connected", !!connected);
+  }
+
+  function startTimer(){
+    if(callTimerInterval) return;
+    $("callTimer").classList.remove("hidden");
+    callTimerInterval = setInterval(()=>{
+      callSeconds++;
+      const m = String(Math.floor(callSeconds/60)).padStart(2,"0");
+      const s = String(callSeconds%60).padStart(2,"0");
+      $("callTimer").textContent = m + ":" + s;
+    }, 1000);
+  }
+
+  function enterCallScreen(){
+    showScreen("call");
+    setCallStatus("Connecting…", false);
+  }
+
+  function attachCallHandlers(call){
+    mediaConn = call;
+
+    call.on("stream", (remoteStream) => {
+      if(remoteVideo.srcObject !== remoteStream) remoteVideo.srcObject = remoteStream;
+      hasRemoteVideo = true;
+      remotePlaceholder.classList.add("hidden");
+    });
+
+    call.on("close", () => {
+      setCallStatus("Call ended", false);
+      toast("The other person left the call");
+    });
+
+    call.on("error", (err) => {
+      console.error("call error", err);
+      setCallStatus("Connection error", false);
+    });
+
+    // Watch the underlying RTCPeerConnection for real connection state.
+    const watchPc = () => {
+      const rtcPc = call.peerConnection;
+      if(!rtcPc){ setTimeout(watchPc, 300); return; }
+      rtcPc.onconnectionstatechange = () => {
+        const state = rtcPc.connectionState;
+        if(state === "connected"){ setCallStatus("Connected", true); startTimer(); }
+        else if(state === "disconnected"){ setCallStatus("Reconnecting…", false); }
+        else if(state === "failed"){ setCallStatus("Connection failed", false); toast("Connection failed — the other person may have a restrictive network."); }
+        else if(state === "closed"){ setCallStatus("Call ended", false); }
+      };
+    };
+    watchPc();
+  }
+
+  // ---------- CALLER FLOW ----------
+  async function startCall(){
+    $("waitingStatus").textContent = "Setting up your room…";
+    $("waitingSub").textContent = "Getting camera and microphone ready";
+    $("codeDisplay").classList.add("hidden");
+    showScreen("waiting");
+
+    await getMedia();
+    role = "caller";
+    roomCode = genCode();
+
+    peer = new Peer(ROOM_PREFIX + roomCode, { config: ICE_SERVERS });
+
+    peer.on("open", () => {
+      $("roomCodeText").textContent = roomCode;
+      $("codeDisplay").classList.remove("hidden");
+      $("waitingStatus").textContent = "Waiting for the other person…";
+      $("waitingSub").textContent = "Share this code with them so they can join";
+    });
+
+    peer.on("call", (incomingCall) => {
+      incomingCall.answer(localStream || undefined);
+      attachCallHandlers(incomingCall);
+      $("waitingStatus").textContent = "Connecting…";
+      enterCallScreen();
+    });
+
+    peer.on("error", (err) => {
+      console.error("peer error", err);
+      if(err.type === "unavailable-id"){
+        // Extremely rare — regenerate and retry once.
+        startCall();
+      } else {
+        toast("Connection error: " + err.type);
+      }
+    });
+  }
+
+  // ---------- CALLEE FLOW ----------
+  async function joinCall(code){
+    if(!code || code.length < 4){ toast("Enter a valid room code"); return; }
+    roomCode = code.toUpperCase();
+
+    $("waitingStatus").textContent = "Connecting to that room…";
+    $("waitingSub").textContent = "Getting camera and microphone ready";
+    $("codeDisplay").classList.add("hidden");
+    showScreen("waiting");
+
+    await getMedia();
+    role = "callee";
+
+    peer = new Peer({ config: ICE_SERVERS });
+
+    peer.on("open", () => {
+      const call = peer.call(ROOM_PREFIX + roomCode, localStream || undefined);
+      if(!call){ toast("Couldn't start the call"); showScreen("home"); cleanupMedia(); return; }
+      attachCallHandlers(call);
+      $("waitingStatus").textContent = "Connecting…";
+      enterCallScreen();
+    });
+
+    peer.on("error", (err) => {
+      console.error("peer error", err);
+      if(err.type === "peer-unavailable"){
+        toast("No active room found with that code");
+        showScreen("home");
+        cleanupMedia();
+      } else {
+        toast("Connection error: " + err.type);
+      }
+    });
+  }
+
+  // ---------- controls ----------
+  function toggleMic(){
+    if(!localStream || localStream.getAudioTracks().length === 0){ toast("No microphone available"); return; }
+    micOn = !micOn;
+    localStream.getAudioTracks().forEach(t => t.enabled = micOn);
+    $("toggleMicBtn").classList.toggle("active-off", !micOn);
+    $("toggleMicBtn").innerHTML = micOn
+      ? '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 1a3 3 0 00-3 3v8a3 3 0 006 0V4a3 3 0 00-3-3z"/><path d="M19 10v2a7 7 0 01-14 0v-2M12 19v4M8 23h8"/></svg>'
+      : '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 1l22 22"/><path d="M9 9v3a3 3 0 005.12 2.12M15 9.34V4a3 3 0 00-5.94-.6"/><path d="M19 10v2a7 7 0 01-11.03 5.71M5 10v2a7 7 0 001.5 4.36M12 19v4M8 23h8"/></svg>';
+  }
+
+  function toggleCam(){
+    if(!localStream || localStream.getVideoTracks().length === 0){ toast("No camera available"); return; }
+    camOn = !camOn;
+    localStream.getVideoTracks().forEach(t => t.enabled = camOn);
+    $("toggleCamBtn").classList.toggle("active-off", !camOn);
+  }
+
+  function cleanupMedia(){
+    if(localStream){ localStream.getTracks().forEach(t=>t.stop()); localStream = null; }
+    if(mediaConn){ try{ mediaConn.close(); }catch(e){} mediaConn = null; }
+    if(peer){ try{ peer.destroy(); }catch(e){} peer = null; }
+    if(callTimerInterval){ clearInterval(callTimerInterval); callTimerInterval = null; }
+    callSeconds = 0;
+    $("callTimer").textContent = "00:00";
+    $("callTimer").classList.add("hidden");
+    remoteVideo.srcObject = null;
+    localVideo.srcObject = null;
+    localVideo.classList.remove("hidden");
+    hasRemoteVideo = false;
+    micOn = true; camOn = true;
+    mediaMode = "none";
+  }
+
+  function endCall(){
+    cleanupMedia();
+    showScreen("home");
+    $("joinCodeInput").value = "";
+  }
+
+  // ---------- events ----------
+  $("startCallBtn").addEventListener("click", startCall);
+  $("joinCallBtn").addEventListener("click", () => joinCall($("joinCodeInput").value.trim()));
+  $("joinCodeInput").addEventListener("keyup", (e) => {
+    e.target.value = e.target.value.toUpperCase();
+    if(e.key === "Enter") joinCall(e.target.value.trim());
+  });
+  $("cancelWaitBtn").addEventListener("click", () => { cleanupMedia(); showScreen("home"); });
+  $("copyCodeBtn").addEventListener("click", () => {
+    navigator.clipboard.writeText(roomCode).then(()=>toast("Code copied")).catch(()=>toast("Copy this code: " + roomCode));
+  });
+  $("toggleMicBtn").addEventListener("click", toggleMic);
+  $("toggleCamBtn").addEventListener("click", toggleCam);
+  $("endCallBtn").addEventListener("click", endCall);
+
+  window.addEventListener("beforeunload", cleanupMedia);
+
+  showScreen("home");
+})();
+</script>
+</body>
+</html>
