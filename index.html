@@ -233,6 +233,14 @@
     z-index:10;
   }
   .toast.show{opacity:1;}
+
+  #debugPanel{
+    position:absolute; top:64px; left:20px; right:20px; max-height:40vh;
+    overflow-y:auto; background:rgba(0,0,0,.75); border:1px solid var(--border);
+    border-radius:10px; padding:10px 12px; font-family:"SF Mono",SFMono-Regular,Consolas,monospace;
+    font-size:11px; line-height:1.6; color:#8FE3C4; z-index:6; backdrop-filter:blur(6px);
+  }
+  #debugPanel div{border-bottom:1px solid rgba(255,255,255,.06); padding:2px 0;}
 </style>
 </head>
 <body>
@@ -304,12 +312,14 @@
     <video id="localVideo" autoplay playsinline muted></video>
 
     <div class="top-bar">
-      <div class="call-status">
+      <div class="call-status" id="debugToggle" style="cursor:pointer;">
         <span class="status-dot" id="callStatusDot"></span>
         <span id="callStatusText">Connecting…</span>
       </div>
       <div class="timer hidden" id="callTimer">00:00</div>
     </div>
+
+    <div id="debugPanel" class="hidden"></div>
 
     <div class="controls">
       <button class="ctrl-btn" id="toggleMicBtn" title="Mute">
@@ -387,6 +397,19 @@
     t.classList.add("show");
     clearTimeout(t._timer);
     t._timer = setTimeout(()=>t.classList.remove("show"), ms);
+  }
+
+  const debugLines = [];
+  function logDebug(msg){
+    const time = new Date().toLocaleTimeString([], {hour12:false});
+    debugLines.push(`[${time}] ${msg}`);
+    if(debugLines.length > 60) debugLines.shift();
+    const panel = $("debugPanel");
+    if(panel){
+      panel.innerHTML = debugLines.map(l => `<div>${l}</div>`).join("");
+      panel.scrollTop = panel.scrollHeight;
+    }
+    console.log(msg);
   }
 
   function genCode(){
@@ -470,20 +493,23 @@
 
   function attachCallHandlers(call){
     mediaConn = call;
+    logDebug("Media call object created (" + role + ")");
 
     call.on("stream", (remoteStream) => {
+      logDebug("Remote media stream received");
       if(remoteVideo.srcObject !== remoteStream) remoteVideo.srcObject = remoteStream;
       hasRemoteVideo = true;
       remotePlaceholder.classList.add("hidden");
     });
 
     call.on("close", () => {
+      logDebug("Call closed by remote side");
       setCallStatus("Call ended", false);
       toast("The other person left the call");
     });
 
     call.on("error", (err) => {
-      console.error("call error", err);
+      logDebug("Call error: " + (err.type || err.message || err));
       setCallStatus("Connection error", false);
     });
 
@@ -493,6 +519,7 @@
     const watchPc = () => {
       const rtcPc = call.peerConnection;
       if(!rtcPc){ setTimeout(watchPc, 300); return; }
+      logDebug("RTCPeerConnection attached, watching state");
 
       rtcPc.onicecandidate = (e) => {
         if(e.candidate && e.candidate.candidate){
@@ -504,16 +531,26 @@
       };
 
       rtcPc.onicegatheringstatechange = () => {
+        logDebug("ICE gathering: " + rtcPc.iceGatheringState);
         if(rtcPc.iceGatheringState === "complete"){
-          console.log("ICE candidates gathered — host:", iceStats.host, "srflx (STUN):", iceStats.srflx, "relay (TURN):", iceStats.relay);
+          logDebug(`ICE candidates — host:${iceStats.host} stun:${iceStats.srflx} relay:${iceStats.relay}`);
           if(iceStats.relay === 0){
-            console.warn("No TURN relay candidates were found. Check that your TURN username/credential in ICE_SERVERS are exactly correct, and that this network allows outbound traffic to global.relay.metered.ca.");
+            logDebug("⚠ No TURN relay candidates found — check credentials/network");
           }
         }
       };
 
+      rtcPc.oniceconnectionstatechange = () => {
+        logDebug("ICE connection state: " + rtcPc.iceConnectionState);
+      };
+
+      rtcPc.onsignalingstatechange = () => {
+        logDebug("Signaling state: " + rtcPc.signalingState);
+      };
+
       rtcPc.onconnectionstatechange = () => {
         const state = rtcPc.connectionState;
+        logDebug("Connection state: " + state);
         if(state === "connected"){ setCallStatus("Connected", true); startTimer(); clearTimeout(window._stuckTimer); }
         else if(state === "disconnected"){ setCallStatus("Reconnecting…", false); }
         else if(state === "failed"){
@@ -522,7 +559,7 @@
             ? "TURN relay was found but the connection still failed."
             : "No TURN relay candidate was found — check TURN credentials/network.";
           toast("Connection failed. " + detail);
-          console.error("Connection failed. ICE candidate counts:", iceStats);
+          logDebug("✗ FAILED. ICE counts — host:" + iceStats.host + " stun:" + iceStats.srflx + " relay:" + iceStats.relay);
         }
         else if(state === "closed"){ setCallStatus("Call ended", false); }
       };
@@ -536,15 +573,19 @@
     $("waitingSub").textContent = "Getting camera and microphone ready";
     $("codeDisplay").classList.add("hidden");
     showScreen("waiting");
+    logDebug("Starting call as caller");
 
     await getMedia();
+    logDebug("Media mode: " + mediaMode);
     role = "caller";
     roomCode = genCode();
 
     const iceServers = await getIceServers();
+    logDebug("Connecting to signaling broker as room " + roomCode);
     peer = new Peer(ROOM_PREFIX + roomCode, { config: iceServers });
 
     peer.on("open", () => {
+      logDebug("✓ Connected to signaling broker successfully");
       $("roomCodeText").textContent = roomCode;
       $("codeDisplay").classList.remove("hidden");
       $("waitingStatus").textContent = "Waiting for the other person…";
@@ -552,16 +593,18 @@
     });
 
     peer.on("call", (incomingCall) => {
+      logDebug("Incoming call received from other side");
       incomingCall.answer(localStream || undefined);
       attachCallHandlers(incomingCall);
       $("waitingStatus").textContent = "Connecting…";
       enterCallScreen();
     });
 
+    peer.on("disconnected", () => logDebug("⚠ Disconnected from signaling broker"));
+
     peer.on("error", (err) => {
-      console.error("peer error", err);
+      logDebug("✗ Peer error: " + err.type);
       if(err.type === "unavailable-id"){
-        // Extremely rare — regenerate and retry once.
         startCall();
       } else {
         toast("Connection error: " + err.type);
@@ -578,23 +621,28 @@
     $("waitingSub").textContent = "Getting camera and microphone ready";
     $("codeDisplay").classList.add("hidden");
     showScreen("waiting");
+    logDebug("Joining room " + roomCode + " as callee");
 
     await getMedia();
+    logDebug("Media mode: " + mediaMode);
     role = "callee";
 
     const iceServers = await getIceServers();
     peer = new Peer({ config: iceServers });
 
     peer.on("open", () => {
+      logDebug("✓ Connected to signaling broker, calling " + roomCode);
       const call = peer.call(ROOM_PREFIX + roomCode, localStream || undefined);
-      if(!call){ toast("Couldn't start the call"); showScreen("home"); cleanupMedia(); return; }
+      if(!call){ logDebug("✗ peer.call() returned nothing"); toast("Couldn't start the call"); showScreen("home"); cleanupMedia(); return; }
       attachCallHandlers(call);
       $("waitingStatus").textContent = "Connecting…";
       enterCallScreen();
     });
 
+    peer.on("disconnected", () => logDebug("⚠ Disconnected from signaling broker"));
+
     peer.on("error", (err) => {
-      console.error("peer error", err);
+      logDebug("✗ Peer error: " + err.type);
       if(err.type === "peer-unavailable"){
         toast("No active room found with that code");
         showScreen("home");
@@ -659,6 +707,9 @@
   $("toggleMicBtn").addEventListener("click", toggleMic);
   $("toggleCamBtn").addEventListener("click", toggleCam);
   $("endCallBtn").addEventListener("click", endCall);
+  $("debugToggle").addEventListener("click", () => {
+    $("debugPanel").classList.toggle("hidden");
+  });
 
   window.addEventListener("beforeunload", cleanupMedia);
 
