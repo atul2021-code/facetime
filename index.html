@@ -343,10 +343,10 @@
       { urls: "stun:stun.l.google.com:19302" },
       { urls: "stun:stun1.l.google.com:19302" },
       { urls: "stun:stun.relay.metered.ca:80" },
-      { urls: "turn:global.relay.metered.ca:80", username: "13691c4803b742da42a035a1", credential: "JCSanMtgIDfscFsz" },
-      { urls: "turn:global.relay.metered.ca:80?transport=tcp", username: "13691c4803b742da42a035a1", credential: "JCSanMtgIDfscFsz" },
-      { urls: "turn:global.relay.metered.ca:443", username: "13691c4803b742da42a035a1", credential: "JCSanMtgIDfscFsz" },
-      { urls: "turns:global.relay.metered.ca:443?transport=tcp", username: "13691c4803b742da42a035a1", credential: "JCSanMtgIDfscFsz" }
+      { urls: "turn:global.relay.metered.ca:80", username: "13691c4803b742da42a035a1", credential: "JCSanMtglDfscFsz" },
+      { urls: "turn:global.relay.metered.ca:80?transport=tcp", username: "13691c4803b742da42a035a1", credential: "JCSanMtglDfscFsz" },
+      { urls: "turn:global.relay.metered.ca:443", username: "13691c4803b742da42a035a1", credential: "JCSanMtglDfscFsz" },
+      { urls: "turns:global.relay.metered.ca:443?transport=tcp", username: "13691c4803b742da42a035a1", credential: "JCSanMtglDfscFsz" }
     ]
   };
 
@@ -480,15 +480,43 @@
       setCallStatus("Connection error", false);
     });
 
-    // Watch the underlying RTCPeerConnection for real connection state.
+    // Watch the underlying RTCPeerConnection for real connection state,
+    // and log which kinds of ICE candidates are actually found (diagnostics).
+    const iceStats = { host: 0, srflx: 0, relay: 0 };
     const watchPc = () => {
       const rtcPc = call.peerConnection;
       if(!rtcPc){ setTimeout(watchPc, 300); return; }
+
+      rtcPc.onicecandidate = (e) => {
+        if(e.candidate && e.candidate.candidate){
+          const c = e.candidate.candidate;
+          if(c.includes(" typ host")) iceStats.host++;
+          else if(c.includes(" typ srflx")) iceStats.srflx++;
+          else if(c.includes(" typ relay")) iceStats.relay++;
+        }
+      };
+
+      rtcPc.onicegatheringstatechange = () => {
+        if(rtcPc.iceGatheringState === "complete"){
+          console.log("ICE candidates gathered — host:", iceStats.host, "srflx (STUN):", iceStats.srflx, "relay (TURN):", iceStats.relay);
+          if(iceStats.relay === 0){
+            console.warn("No TURN relay candidates were found. Check that your TURN username/credential in ICE_SERVERS are exactly correct, and that this network allows outbound traffic to global.relay.metered.ca.");
+          }
+        }
+      };
+
       rtcPc.onconnectionstatechange = () => {
         const state = rtcPc.connectionState;
         if(state === "connected"){ setCallStatus("Connected", true); startTimer(); }
         else if(state === "disconnected"){ setCallStatus("Reconnecting…", false); }
-        else if(state === "failed"){ setCallStatus("Connection failed", false); toast("Connection failed — the other person may have a restrictive network."); }
+        else if(state === "failed"){
+          setCallStatus("Connection failed", false);
+          const detail = iceStats.relay > 0
+            ? "TURN relay was found but the connection still failed."
+            : "No TURN relay candidate was found — check TURN credentials/network.";
+          toast("Connection failed. " + detail);
+          console.error("Connection failed. ICE candidate counts:", iceStats);
+        }
         else if(state === "closed"){ setCallStatus("Call ended", false); }
       };
     };
