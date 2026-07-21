@@ -459,6 +459,13 @@
   function enterCallScreen(){
     showScreen("call");
     setCallStatus("Connecting…", false);
+    clearTimeout(window._stuckTimer);
+    window._stuckTimer = setTimeout(() => {
+      const state = mediaConn && mediaConn.peerConnection ? mediaConn.peerConnection.connectionState : "unknown";
+      if(state !== "connected"){
+        toast("Still connecting after 20s. Check: same room code on both sides, and camera/mic permission allowed on both devices.", 6000);
+      }
+    }, 20000);
   }
 
   function attachCallHandlers(call){
@@ -507,7 +514,7 @@
 
       rtcPc.onconnectionstatechange = () => {
         const state = rtcPc.connectionState;
-        if(state === "connected"){ setCallStatus("Connected", true); startTimer(); }
+        if(state === "connected"){ setCallStatus("Connected", true); startTimer(); clearTimeout(window._stuckTimer); }
         else if(state === "disconnected"){ setCallStatus("Reconnecting…", false); }
         else if(state === "failed"){
           setCallStatus("Connection failed", false);
