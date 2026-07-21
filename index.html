@@ -498,8 +498,18 @@
     call.on("stream", (remoteStream) => {
       logDebug("Remote media stream received");
       if(remoteVideo.srcObject !== remoteStream) remoteVideo.srcObject = remoteStream;
+      remoteVideo.play().then(() => {
+        logDebug("Remote video playing");
+      }).catch((err) => {
+        logDebug("⚠ Remote video play() blocked: " + err.name);
+      });
       hasRemoteVideo = true;
       remotePlaceholder.classList.add("hidden");
+      // A stream arriving is solid proof the call is actually connected —
+      // don't wait on connectionstatechange, which some browsers fire late or not at all.
+      setCallStatus("Connected", true);
+      startTimer();
+      clearTimeout(window._stuckTimer);
     });
 
     call.on("close", () => {
