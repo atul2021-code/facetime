@@ -333,19 +333,26 @@
 (function(){
   "use strict";
 
-  // ---------- ICE servers: free STUN (Google) + free TURN relay (Open Relay Project) ----------
+  // ---------- ICE servers: STUN (free) + personal TURN relay (Metered/Open Relay) ----------
   // TURN is essential for calling across the open internet — many networks (mobile carriers,
-  // corporate firewalls, symmetric NATs) block direct peer-to-peer STUN connections, so
-  // without a relay the call would only work between simple home networks.
+  // corporate firewalls, symmetric NATs) block direct peer-to-peer connections, so without a
+  // working relay, calls between two different networks/countries will fail to connect.
+  // These are your personal TURN credentials from the Metered dashboard (20GB/month free).
   const ICE_SERVERS = {
     iceServers: [
       { urls: "stun:stun.l.google.com:19302" },
       { urls: "stun:stun1.l.google.com:19302" },
-      { urls: "turn:openrelay.metered.ca:80", username: "openrelayproject", credential: "openrelayproject" },
-      { urls: "turn:openrelay.metered.ca:443", username: "openrelayproject", credential: "openrelayproject" },
-      { urls: "turn:openrelay.metered.ca:443?transport=tcp", username: "openrelayproject", credential: "openrelayproject" }
+      { urls: "stun:stun.relay.metered.ca:80" },
+      { urls: "turn:global.relay.metered.ca:80", username: "13691c4803b742da42a035a1", credential: "JCSanMtgIDfscFsz" },
+      { urls: "turn:global.relay.metered.ca:80?transport=tcp", username: "13691c4803b742da42a035a1", credential: "JCSanMtgIDfscFsz" },
+      { urls: "turn:global.relay.metered.ca:443", username: "13691c4803b742da42a035a1", credential: "JCSanMtgIDfscFsz" },
+      { urls: "turns:global.relay.metered.ca:443?transport=tcp", username: "13691c4803b742da42a035a1", credential: "JCSanMtgIDfscFsz" }
     ]
   };
+
+  async function getIceServers(){
+    return ICE_SERVERS;
+  }
 
   // PeerJS's free public cloud broker handles connection setup (offer/answer/ICE exchange)
   // over the open internet, so this page works as a plain static file hosted anywhere —
@@ -499,7 +506,8 @@
     role = "caller";
     roomCode = genCode();
 
-    peer = new Peer(ROOM_PREFIX + roomCode, { config: ICE_SERVERS });
+    const iceServers = await getIceServers();
+    peer = new Peer(ROOM_PREFIX + roomCode, { config: iceServers });
 
     peer.on("open", () => {
       $("roomCodeText").textContent = roomCode;
@@ -539,7 +547,8 @@
     await getMedia();
     role = "callee";
 
-    peer = new Peer({ config: ICE_SERVERS });
+    const iceServers = await getIceServers();
+    peer = new Peer({ config: iceServers });
 
     peer.on("open", () => {
       const call = peer.call(ROOM_PREFIX + roomCode, localStream || undefined);
