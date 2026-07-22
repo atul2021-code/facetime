@@ -496,8 +496,13 @@
     logDebug("Media call object created (" + role + ")");
 
     call.on("stream", (remoteStream) => {
-      logDebug("Remote media stream received");
+      const vTracks = remoteStream.getVideoTracks().length;
+      const aTracks = remoteStream.getAudioTracks().length;
+      logDebug(`Remote media stream received — video tracks: ${vTracks}, audio tracks: ${aTracks}`);
       if(remoteVideo.srcObject !== remoteStream) remoteVideo.srcObject = remoteStream;
+      remoteVideo.onloadedmetadata = () => {
+        logDebug(`Remote video element size: ${remoteVideo.videoWidth}x${remoteVideo.videoHeight}`);
+      };
       remoteVideo.play().then(() => {
         logDebug("Remote video playing");
       }).catch((err) => {
