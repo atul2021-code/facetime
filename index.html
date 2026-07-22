@@ -555,15 +555,25 @@
       // Poll actual byte counts flowing through the connection — the only sure way to know
       // if media is really moving, independent of whether the <video> element is rendering it.
       let lastVideoBytes = null, lastAudioBytes = null;
+      let loggedInventory = false;
       const statsInterval = setInterval(async () => {
         if(!rtcPc || rtcPc.connectionState === "closed"){ clearInterval(statsInterval); return; }
         try{
           const stats = await rtcPc.getStats();
           let vBytes = null, aBytes = null;
+          const inventory = [];
           stats.forEach(r => {
-            if(r.type === "inbound-rtp" && r.kind === "video") vBytes = r.bytesReceived;
-            if(r.type === "inbound-rtp" && r.kind === "audio") aBytes = r.bytesReceived;
+            if(r.type === "inbound-rtp"){
+              const kind = r.kind || r.mediaType || "?";
+              inventory.push(`${r.type}/${kind} bytesReceived=${r.bytesReceived}`);
+              if(kind === "video") vBytes = r.bytesReceived;
+              if(kind === "audio") aBytes = r.bytesReceived;
+            }
           });
+          if(!loggedInventory){
+            logDebug("Stats reports found: " + (inventory.length ? inventory.join(" | ") : "NONE — no inbound-rtp reports at all"));
+            loggedInventory = true;
+          }
           const vDelta = (lastVideoBytes !== null && vBytes !== null) ? vBytes - lastVideoBytes : null;
           const aDelta = (lastAudioBytes !== null && aBytes !== null) ? aBytes - lastAudioBytes : null;
           logDebug(`Bytes received — video: ${vBytes ?? "n/a"} (+${vDelta ?? "?"}), audio: ${aBytes ?? "n/a"} (+${aDelta ?? "?"})`);
@@ -571,7 +581,7 @@
             logDebug("⚠ No new bytes flowing — media relay may be blocked despite a connected ICE pair");
           }
           lastVideoBytes = vBytes; lastAudioBytes = aBytes;
-        }catch(e){ /* ignore */ }
+        }catch(e){ logDebug("getStats() error: " + e.message); }
       }, 3000);
 
       rtcPc.onicecandidate = (e) => {
