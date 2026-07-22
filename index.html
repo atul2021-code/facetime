@@ -503,6 +503,14 @@
       const vTracks = remoteStream.getVideoTracks().length;
       const aTracks = remoteStream.getAudioTracks().length;
       logDebug(`Remote media stream received — video tracks: ${vTracks}, audio tracks: ${aTracks}`);
+
+      remoteStream.getTracks().forEach(track => {
+        logDebug(`Track [${track.kind}] readyState:${track.readyState} muted:${track.muted} enabled:${track.enabled}`);
+        track.onmute = () => logDebug(`⚠ Track [${track.kind}] MUTED — no data arriving from remote side`);
+        track.onunmute = () => logDebug(`✓ Track [${track.kind}] UNMUTED — data now arriving`);
+        track.onended = () => logDebug(`Track [${track.kind}] ENDED`);
+      });
+
       if(remoteVideo.srcObject !== remoteStream) remoteVideo.srcObject = remoteStream;
       remoteVideo.onloadedmetadata = () => {
         logDebug(`Remote video element size: ${remoteVideo.videoWidth}x${remoteVideo.videoHeight}`);
@@ -757,9 +765,9 @@
     $("debugPanel").classList.toggle("hidden");
   });
   $("tapToPlayBtn").addEventListener("click", () => {
+    $("tapToPlayBtn").classList.add("hidden");
     remoteVideo.play().then(() => {
-      logDebug("Remote video playing after manual tap");
-      $("tapToPlayBtn").classList.add("hidden");
+      logDebug(`Manual play succeeded — readyState:${remoteVideo.readyState} size:${remoteVideo.videoWidth}x${remoteVideo.videoHeight} paused:${remoteVideo.paused}`);
     }).catch((err) => {
       logDebug("⚠ Manual play still blocked: " + err.name);
     });
