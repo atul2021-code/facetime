@@ -540,6 +540,31 @@
       const rtcPc = call.peerConnection;
       if(!rtcPc){ setTimeout(watchPc, 300); return; }
       logDebug("RTCPeerConnection attached, watching state");
+      // Log current state immediately — it may have already changed before we attached listeners.
+      logDebug("Current ICE connection state: " + rtcPc.iceConnectionState);
+      logDebug("Current connection state: " + rtcPc.connectionState);
+
+      // Poll actual byte counts flowing through the connection — the only sure way to know
+      // if media is really moving, independent of whether the <video> element is rendering it.
+      let lastVideoBytes = null, lastAudioBytes = null;
+      const statsInterval = setInterval(async () => {
+        if(!rtcPc || rtcPc.connectionState === "closed"){ clearInterval(statsInterval); return; }
+        try{
+          const stats = await rtcPc.getStats();
+          let vBytes = null, aBytes = null;
+          stats.forEach(r => {
+            if(r.type === "inbound-rtp" && r.kind === "video") vBytes = r.bytesReceived;
+            if(r.type === "inbound-rtp" && r.kind === "audio") aBytes = r.bytesReceived;
+          });
+          const vDelta = (lastVideoBytes !== null && vBytes !== null) ? vBytes - lastVideoBytes : null;
+          const aDelta = (lastAudioBytes !== null && aBytes !== null) ? aBytes - lastAudioBytes : null;
+          logDebug(`Bytes received — video: ${vBytes ?? "n/a"} (+${vDelta ?? "?"}), audio: ${aBytes ?? "n/a"} (+${aDelta ?? "?"})`);
+          if(vDelta === 0 && aDelta === 0){
+            logDebug("⚠ No new bytes flowing — media relay may be blocked despite a connected ICE pair");
+          }
+          lastVideoBytes = vBytes; lastAudioBytes = aBytes;
+        }catch(e){ /* ignore */ }
+      }, 3000);
 
       rtcPc.onicecandidate = (e) => {
         if(e.candidate && e.candidate.candidate){
