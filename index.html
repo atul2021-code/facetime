@@ -485,9 +485,20 @@
     conn.oniceconnectionstatechange = () => logDebug("ICE connection state: " + conn.iceConnectionState);
     conn.onsignalingstatechange = () => logDebug("Signaling state: " + conn.signalingState);
 
+    let handledStreamId = null;
     conn.ontrack = (event) => {
       const remoteStream = event.streams[0];
       if(!remoteStream) return;
+
+      // ontrack fires once per track (audio, video) even though both belong to the same
+      // stream — only run setup (and especially play()) once per stream, or the second
+      // play() call aborts the first with AbortError.
+      if(remoteStream.id === handledStreamId){
+        logDebug(`Additional track event for already-handled stream (${event.track.kind}) — skipping duplicate setup`);
+        return;
+      }
+      handledStreamId = remoteStream.id;
+
       const vTracks = remoteStream.getVideoTracks().length;
       const aTracks = remoteStream.getAudioTracks().length;
       logDebug(`Remote track event — video tracks: ${vTracks}, audio tracks: ${aTracks}`);
@@ -503,7 +514,7 @@
         };
       });
 
-      if(remoteVideo.srcObject !== remoteStream) remoteVideo.srcObject = remoteStream;
+      remoteVideo.srcObject = remoteStream;
       remoteVideo.onloadedmetadata = () => logDebug(`Remote video size: ${remoteVideo.videoWidth}x${remoteVideo.videoHeight}`);
       remoteVideo.play().then(() => {
         logDebug("Remote video playing");
