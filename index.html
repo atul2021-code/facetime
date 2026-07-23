@@ -29,18 +29,17 @@
   }
   #app{height:100%; position:relative;}
 
-  /* ---------- shared ---------- */
   .screen{
     position:absolute; inset:0;
     display:flex; flex-direction:column;
     align-items:center; justify-content:center;
     transition:opacity .35s ease;
+    overflow-y:auto;
   }
   .hidden{display:none !important;}
 
-  /* ---------- HOME ---------- */
   #home{padding:24px;}
-  .home-inner{width:100%; max-width:380px; text-align:center;}
+  .home-inner{width:100%; max-width:380px; text-align:center; margin:auto;}
   .logo{
     width:64px; height:64px; margin:0 auto 18px;
     border-radius:20px;
@@ -49,21 +48,11 @@
     box-shadow:0 8px 30px rgba(0,168,132,.35);
   }
   .logo svg{width:30px; height:30px;}
-  h1{
-    font-size:26px; font-weight:700; letter-spacing:-0.02em;
-    margin-bottom:6px;
-  }
-  .tagline{
-    color:var(--text-secondary); font-size:14px; margin-bottom:36px;
-    letter-spacing:.01em;
-  }
+  h1{font-size:26px; font-weight:700; letter-spacing:-0.02em; margin-bottom:6px;}
+  .tagline{color:var(--text-secondary); font-size:14px; margin-bottom:32px; letter-spacing:.01em;}
   .card{
-    background:var(--bg-panel);
-    border:1px solid var(--border);
-    border-radius:16px;
-    padding:22px;
-    margin-bottom:14px;
-    text-align:left;
+    background:var(--bg-panel); border:1px solid var(--border); border-radius:16px;
+    padding:22px; margin-bottom:14px; text-align:left;
   }
   .card-label{
     font-size:11px; text-transform:uppercase; letter-spacing:.09em;
@@ -77,26 +66,18 @@
     font-family:inherit;
   }
   .btn:active{transform:scale(.98);}
-  .btn-primary{
-    background:linear-gradient(135deg,var(--teal),var(--teal-bright));
-    color:#08201A;
-  }
+  .btn-primary{background:linear-gradient(135deg,var(--teal),var(--teal-bright)); color:#08201A;}
   .btn-primary:hover{filter:brightness(1.08);}
-  .btn-secondary{
-    background:var(--bg-raised); color:var(--text-primary);
-    border:1px solid var(--border);
-  }
+  .btn-secondary{background:var(--bg-raised); color:var(--text-primary); border:1px solid var(--border);}
   .btn-secondary:hover{border-color:var(--teal);}
-  .join-row{display:flex; gap:8px;}
-  .code-input{
-    flex:1; background:var(--bg-raised); border:1px solid var(--border);
-    border-radius:12px; padding:14px 16px; color:var(--text-primary);
-    font-size:18px; letter-spacing:.18em; text-align:center;
-    font-family:"SF Mono",SFMono-Regular,Consolas,monospace;
-    text-transform:uppercase;
+  .code-box{
+    width:100%; background:var(--bg-raised); border:1px solid var(--border);
+    border-radius:12px; padding:12px 14px; color:var(--text-primary);
+    font-size:12px; font-family:"SF Mono",SFMono-Regular,Consolas,monospace;
+    resize:none; margin-bottom:10px; line-height:1.5;
   }
-  .code-input:focus{outline:none; border-color:var(--teal);}
-  .code-input::placeholder{letter-spacing:.05em; color:#556570; font-family:inherit;}
+  .code-box:focus{outline:none; border-color:var(--teal);}
+  .code-box::placeholder{color:#556570; font-family:inherit; font-size:14px;}
   .divider{
     display:flex; align-items:center; gap:12px; color:var(--text-secondary);
     font-size:12px; margin:18px 0; text-transform:uppercase; letter-spacing:.08em;
@@ -105,118 +86,92 @@
   .foot-note{color:var(--text-secondary); font-size:12px; margin-top:22px; line-height:1.6;}
   .foot-note b{color:var(--text-primary);}
 
-  /* ---------- WAITING / RINGING ---------- */
   #waiting{padding:24px; text-align:center;}
+  .waiting-inner{width:100%; max-width:420px; margin:auto;}
   .ripple-wrap{
-    position:relative; width:160px; height:160px; margin:0 auto 30px;
+    position:relative; width:120px; height:120px; margin:0 auto 20px;
     display:flex; align-items:center; justify-content:center;
   }
   .ripple-ring{
-    position:absolute; border-radius:50%;
-    border:2px solid var(--teal);
-    width:100%; height:100%;
-    opacity:0;
-    animation:ripple 2.4s ease-out infinite;
+    position:absolute; border-radius:50%; border:2px solid var(--teal);
+    width:100%; height:100%; opacity:0; animation:ripple 2.4s ease-out infinite;
   }
   .ripple-ring:nth-child(2){animation-delay:.6s;}
   .ripple-ring:nth-child(3){animation-delay:1.2s;}
-  @keyframes ripple{
-    0%{transform:scale(.5); opacity:.7;}
-    100%{transform:scale(1); opacity:0;}
-  }
+  @keyframes ripple{0%{transform:scale(.5); opacity:.7;} 100%{transform:scale(1); opacity:0;}}
   .ripple-core{
-    width:84px; height:84px; border-radius:50%;
+    width:64px; height:64px; border-radius:50%;
     background:linear-gradient(135deg,var(--teal),var(--teal-bright));
     display:flex; align-items:center; justify-content:center;
-    box-shadow:0 8px 30px rgba(0,168,132,.4);
-    z-index:2;
+    box-shadow:0 8px 30px rgba(0,168,132,.4); z-index:2;
   }
-  .ripple-core svg{width:34px; height:34px;}
-  .status-text{font-size:16px; font-weight:600; margin-bottom:8px;}
-  .status-sub{color:var(--text-secondary); font-size:13px; margin-bottom:26px;}
-  .code-display{
-    display:inline-flex; align-items:center; gap:12px;
-    background:var(--bg-panel); border:1px solid var(--border);
-    border-radius:14px; padding:14px 20px; margin-bottom:24px;
+  .ripple-core svg{width:26px; height:26px;}
+  .status-text{font-size:16px; font-weight:600; margin-bottom:6px;}
+  .status-sub{color:var(--text-secondary); font-size:13px; margin-bottom:18px;}
+  .exchange-block{
+    background:var(--bg-panel); border:1px solid var(--border); border-radius:14px;
+    padding:16px; margin-bottom:14px; text-align:left;
   }
-  .code-display .code{
-    font-family:"SF Mono",SFMono-Regular,Consolas,monospace;
-    font-size:22px; letter-spacing:.2em; font-weight:700;
-  }
+  .exchange-label{font-size:12px; font-weight:600; color:var(--teal-bright); margin-bottom:8px;}
+  .row-btn{display:flex; gap:8px;}
+  .row-btn .btn{width:auto; flex:0 0 auto; padding:10px 16px; font-size:13px;}
   .icon-btn{
     background:var(--bg-raised); border:1px solid var(--border);
     border-radius:10px; width:38px; height:38px;
     display:flex; align-items:center; justify-content:center;
-    cursor:pointer; color:var(--text-primary);
+    cursor:pointer; color:var(--text-primary); flex-shrink:0;
   }
   .icon-btn:hover{border-color:var(--teal);}
   .icon-btn svg{width:16px; height:16px;}
 
-  /* ---------- CALL SCREEN ---------- */
-  #call{background:#000; display:block;}
+  #call{background:#000; display:block; overflow:hidden;}
   #remoteVideo{
     width:100%; height:100%; object-fit:cover;
     background:radial-gradient(circle at 50% 40%, #16232B 0%, #0B141A 70%);
   }
   .remote-placeholder{
     position:absolute; inset:0; display:flex; flex-direction:column;
-    align-items:center; justify-content:center; gap:16px;
-    pointer-events:none;
+    align-items:center; justify-content:center; gap:16px; pointer-events:none;
   }
   .placeholder-avatar{
     width:96px; height:96px; border-radius:50%;
     background:linear-gradient(135deg,var(--bg-raised),var(--bg-panel));
-    border:1px solid var(--border);
-    display:flex; align-items:center; justify-content:center;
+    border:1px solid var(--border); display:flex; align-items:center; justify-content:center;
   }
   .placeholder-avatar svg{width:40px; height:40px; color:var(--text-secondary);}
-
   #localVideo{
     position:absolute; top:20px; right:20px;
     width:110px; height:150px; border-radius:14px; object-fit:cover;
     background:#1c2830; border:2px solid rgba(255,255,255,.12);
-    box-shadow:0 6px 24px rgba(0,0,0,.5);
-    transform:scaleX(-1);
-    z-index:5;
+    box-shadow:0 6px 24px rgba(0,0,0,.5); transform:scaleX(-1); z-index:5;
   }
   .top-bar{
     position:absolute; top:0; left:0; right:0; padding:20px;
     display:flex; align-items:center; justify-content:space-between;
-    background:linear-gradient(to bottom, rgba(0,0,0,.55), transparent);
-    z-index:4;
+    background:linear-gradient(to bottom, rgba(0,0,0,.55), transparent); z-index:4;
   }
   .call-status{
-    display:flex; align-items:center; gap:8px;
-    font-size:13px; color:var(--text-primary);
-    background:rgba(0,0,0,.35); padding:8px 14px; border-radius:20px;
-    backdrop-filter:blur(6px);
+    display:flex; align-items:center; gap:8px; font-size:13px; color:var(--text-primary);
+    background:rgba(0,0,0,.35); padding:8px 14px; border-radius:20px; backdrop-filter:blur(6px);
   }
   .status-dot{width:7px; height:7px; border-radius:50%; background:#F5C142;}
   .status-dot.connected{background:var(--teal-bright);}
-  .timer{
-    font-family:"SF Mono",SFMono-Regular,Consolas,monospace; font-size:13px;
-    color:var(--text-secondary);
-  }
+  .timer{font-family:"SF Mono",SFMono-Regular,Consolas,monospace; font-size:13px; color:var(--text-secondary);}
   .controls{
     position:absolute; bottom:0; left:0; right:0; padding:28px 20px 34px;
     display:flex; align-items:center; justify-content:center; gap:18px;
-    background:linear-gradient(to top, rgba(0,0,0,.6), transparent);
-    z-index:4;
+    background:linear-gradient(to top, rgba(0,0,0,.6), transparent); z-index:4;
   }
   .ctrl-btn{
     width:56px; height:56px; border-radius:50%; border:none; cursor:pointer;
     background:rgba(255,255,255,.12); color:var(--text-primary);
     display:flex; align-items:center; justify-content:center;
-    backdrop-filter:blur(8px);
-    transition:transform .12s ease, background .15s ease;
+    backdrop-filter:blur(8px); transition:transform .12s ease, background .15s ease;
   }
   .ctrl-btn:hover{transform:translateY(-2px);}
   .ctrl-btn.active-off{background:rgba(255,255,255,.9); color:#111;}
   .ctrl-btn svg{width:22px; height:22px;}
-  .ctrl-btn.end-call{
-    width:64px; height:64px;
-    background:var(--danger);
-  }
+  .ctrl-btn.end-call{width:64px; height:64px; background:var(--danger);}
   .ctrl-btn.end-call:hover{background:var(--danger-bright);}
 
   @media (max-width:480px){
@@ -229,8 +184,7 @@
     position:absolute; bottom:24px; left:50%; transform:translateX(-50%);
     background:var(--bg-raised); border:1px solid var(--border);
     padding:10px 18px; border-radius:10px; font-size:13px;
-    opacity:0; pointer-events:none; transition:opacity .25s ease;
-    z-index:10;
+    opacity:0; pointer-events:none; transition:opacity .25s ease; z-index:10;
   }
   .toast.show{opacity:1;}
 
@@ -259,45 +213,53 @@
         <div class="card-label">Start a new call</div>
         <button class="btn btn-primary" id="startCallBtn">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 7l-7 5 7 5V7z"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg>
-          Create a room
+          Create a call
         </button>
       </div>
 
       <div class="divider">or</div>
 
       <div class="card">
-        <div class="card-label">Join with a code</div>
-        <div class="join-row">
-          <input id="joinCodeInput" class="code-input" placeholder="ROOM CODE" maxlength="6" autocomplete="off" autocapitalize="characters">
-          <button class="btn btn-secondary" id="joinCallBtn" style="width:auto; padding:14px 20px;">Join</button>
-        </div>
+        <div class="card-label">Join with a call code</div>
+        <textarea id="joinCodeInput" class="code-box" rows="3" placeholder="Paste the call code someone sent you"></textarea>
+        <button class="btn btn-secondary" id="joinCallBtn">Join call</button>
       </div>
 
-      <p class="foot-note">Works globally over the open internet using <b>WebRTC</b> with free STUN/TURN relays — no accounts, no servers to manage, nothing installed.</p>
+      <p class="foot-note">Works globally over the open internet using <b>WebRTC</b> — no accounts, no backend server. You'll exchange one short code with the other person to connect directly.</p>
     </div>
   </div>
 
-  <!-- WAITING / CONNECTING -->
+  <!-- WAITING / CODE EXCHANGE -->
   <div id="waiting" class="screen hidden">
-    <div class="ripple-wrap">
-      <div class="ripple-ring"></div>
-      <div class="ripple-ring"></div>
-      <div class="ripple-ring"></div>
-      <div class="ripple-core">
-        <svg viewBox="0 0 24 24" fill="none" stroke="#08201A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07 19.5 19.5 0 01-6-6 19.79 19.79 0 01-3.07-8.67A2 2 0 014.11 2h3a2 2 0 012 1.72c.127.96.362 1.902.7 2.81a2 2 0 01-.45 2.11L8.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.908.338 1.85.573 2.81.7A2 2 0 0122 16.92z"/></svg>
+    <div class="waiting-inner">
+      <div class="ripple-wrap">
+        <div class="ripple-ring"></div>
+        <div class="ripple-ring"></div>
+        <div class="ripple-ring"></div>
+        <div class="ripple-core">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#08201A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07 19.5 19.5 0 01-6-6 19.79 19.79 0 01-3.07-8.67A2 2 0 014.11 2h3a2 2 0 012 1.72c.127.96.362 1.902.7 2.81a2 2 0 01-.45 2.11L8.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.908.338 1.85.573 2.81.7A2 2 0 0122 16.92z"/></svg>
+        </div>
       </div>
-    </div>
-    <div class="status-text" id="waitingStatus">Setting up your room…</div>
-    <div class="status-sub" id="waitingSub">Getting camera and microphone ready</div>
+      <div class="status-text" id="waitingStatus">Setting up…</div>
+      <div class="status-sub" id="waitingSub">Getting camera and microphone ready</div>
 
-    <div class="code-display hidden" id="codeDisplay">
-      <span class="code" id="roomCodeText">------</span>
-      <button class="icon-btn" id="copyCodeBtn" title="Copy code">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
-      </button>
+      <div class="exchange-block hidden" id="outCodeBlock">
+        <div class="exchange-label" id="outCodeLabel">Your call code — send this to the other person</div>
+        <textarea id="outCodeText" class="code-box" rows="4" readonly></textarea>
+        <div class="row-btn">
+          <button class="btn btn-secondary" id="copyOutCodeBtn" style="flex:1;">Copy code</button>
+        </div>
+      </div>
+
+      <div class="exchange-block hidden" id="inCodeBlock">
+        <div class="exchange-label">Paste the reply code they send back</div>
+        <textarea id="inCodeText" class="code-box" rows="4" placeholder="Paste their reply code here"></textarea>
+        <button class="btn btn-primary" id="connectBtn">Connect</button>
+      </div>
+
+      <br>
+      <button class="btn btn-secondary" id="cancelWaitBtn" style="width:auto; padding:12px 28px;">Cancel</button>
     </div>
-    <br>
-    <button class="btn btn-secondary" id="cancelWaitBtn" style="width:auto; padding:12px 28px;">Cancel</button>
   </div>
 
   <!-- CALL -->
@@ -342,16 +304,11 @@
 
 </div>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/peerjs/1.5.4/peerjs.min.js"></script>
 <script>
 (function(){
   "use strict";
 
   // ---------- ICE servers: STUN (free) + personal TURN relay (Metered/Open Relay) ----------
-  // TURN is essential for calling across the open internet — many networks (mobile carriers,
-  // corporate firewalls, symmetric NATs) block direct peer-to-peer connections, so without a
-  // working relay, calls between two different networks/countries will fail to connect.
-  // These are your personal TURN credentials from the Metered dashboard (20GB/month free).
   const ICE_SERVERS = {
     iceServers: [
       { urls: "stun:stun.l.google.com:19302" },
@@ -364,26 +321,18 @@
     ]
   };
 
-  async function getIceServers(){
-    return ICE_SERVERS;
-  }
+  // No third-party signaling broker: the two browsers exchange one manual "call code" and one
+  // "reply code" (each containing the full SDP + all gathered ICE candidates, base64-encoded).
+  // This removes any dependency on an external service's reliability.
 
-  // PeerJS's free public cloud broker handles connection setup (offer/answer/ICE exchange)
-  // over the open internet, so this page works as a plain static file hosted anywhere —
-  // both people just need to open the same URL, from anywhere in the world.
-  const ROOM_PREFIX = "ripple-"; // namespaces our room codes on the shared public broker
-
-  let peer = null;
-  let mediaConn = null;
+  let pc = null;
   let localStream = null;
-  let roomCode = null;
   let role = null; // 'caller' | 'callee'
   let micOn = true, camOn = true;
   let callTimerInterval = null, callSeconds = 0;
   let hasRemoteVideo = false;
-  let mediaMode = "none"; // 'full' | 'audio-only' | 'video-only' | 'none'
+  let mediaMode = "none";
 
-  // ---------- elements ----------
   const $ = id => document.getElementById(id);
   const screens = { home: $("home"), waiting: $("waiting"), call: $("call") };
   const localVideo = $("localVideo");
@@ -407,7 +356,7 @@
   function logDebug(msg){
     const time = new Date().toLocaleTimeString([], {hour12:false});
     debugLines.push(`[${time}] ${msg}`);
-    if(debugLines.length > 60) debugLines.shift();
+    if(debugLines.length > 80) debugLines.shift();
     const panel = $("debugPanel");
     if(panel){
       panel.innerHTML = debugLines.map(l => `<div>${l}</div>`).join("");
@@ -416,16 +365,7 @@
     console.log(msg);
   }
 
-  function genCode(){
-    const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"; // no ambiguous chars
-    let c = "";
-    for(let i=0;i<6;i++) c += chars[Math.floor(Math.random()*chars.length)];
-    return c;
-  }
-
   // ---------- media ----------
-  // Tries camera+mic first, then falls back gracefully (audio-only, video-only, or
-  // no-device "receive only" mode) instead of blocking the whole app on one error.
   async function tryGetUserMedia(constraints){
     try{ return await navigator.mediaDevices.getUserMedia(constraints); }
     catch(e){ return null; }
@@ -435,10 +375,9 @@
     if(!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia){
       toast("This browser doesn't support camera/mic access.");
       mediaMode = "none";
-      return true; // still allow a receive-only call
+      return;
     }
-
-    const videoAudio = { video:{width:{ideal:1280},height:{ideal:720},frameRate:{ideal:30}}, audio:{echoCancellation:true,noiseSuppression:true,autoGainControl:true} };
+    const videoAudio = { video:{width:{ideal:960},height:{ideal:540},frameRate:{ideal:30}}, audio:{echoCancellation:true,noiseSuppression:true,autoGainControl:true} };
 
     localStream = await tryGetUserMedia(videoAudio);
     if(localStream){ mediaMode = "full"; }
@@ -447,24 +386,17 @@
       localStream = await tryGetUserMedia({ audio:true });
       if(localStream){ mediaMode = "audio-only"; toast("No camera found — joining with audio only."); }
     }
-
     if(!localStream){
       localStream = await tryGetUserMedia({ video:true });
       if(localStream){ mediaMode = "video-only"; toast("No microphone found — joining with video only."); }
     }
-
     if(!localStream){
       mediaMode = "none";
       toast("No camera or microphone found — joining as viewer only.");
     }
 
-    if(localStream){
-      localVideo.srcObject = localStream;
-    } else {
-      localVideo.classList.add("hidden");
-    }
-
-    return true;
+    if(localStream){ localVideo.srcObject = localStream; }
+    else { localVideo.classList.add("hidden"); }
   }
 
   function setCallStatus(text, connected){
@@ -488,33 +420,90 @@
     setCallStatus("Connecting…", false);
     clearTimeout(window._stuckTimer);
     window._stuckTimer = setTimeout(() => {
-      const state = mediaConn && mediaConn.peerConnection ? mediaConn.peerConnection.connectionState : "unknown";
+      const state = pc ? pc.connectionState : "unknown";
       if(state !== "connected"){
-        toast("Still connecting after 20s. Check: same room code on both sides, and camera/mic permission allowed on both devices.", 6000);
+        toast("Still connecting after 20s — this network may be blocking the connection.", 6000);
       }
     }, 20000);
   }
 
-  function attachCallHandlers(call){
-    mediaConn = call;
-    logDebug("Media call object created (" + role + ")");
+  // ---------- SDP <-> code helpers ----------
+  function encodeDesc(desc){
+    return btoa(JSON.stringify({ type: desc.type, sdp: desc.sdp }));
+  }
+  function decodeDesc(code){
+    return JSON.parse(atob(code.trim()));
+  }
 
-    call.on("stream", (remoteStream) => {
+  function waitIceGatheringComplete(conn, timeoutMs=8000){
+    return new Promise((resolve) => {
+      if(conn.iceGatheringState === "complete"){ resolve(); return; }
+      const check = () => {
+        if(conn.iceGatheringState === "complete"){
+          conn.removeEventListener("icegatheringstatechange", check);
+          clearTimeout(timer);
+          resolve();
+        }
+      };
+      conn.addEventListener("icegatheringstatechange", check);
+      const timer = setTimeout(() => {
+        conn.removeEventListener("icegatheringstatechange", check);
+        logDebug("ICE gathering timed out at " + timeoutMs + "ms — proceeding with candidates gathered so far");
+        resolve();
+      }, timeoutMs);
+    });
+  }
+
+  // ---------- peer connection setup + diagnostics ----------
+  function createPeerConnection(){
+    const conn = new RTCPeerConnection(ICE_SERVERS);
+
+    if(localStream){
+      localStream.getTracks().forEach(track => conn.addTrack(track, localStream));
+    }
+    if(mediaMode !== "full"){
+      if(mediaMode !== "video-only") conn.addTransceiver("video", { direction: "recvonly" });
+      if(mediaMode !== "audio-only") conn.addTransceiver("audio", { direction: "recvonly" });
+    }
+
+    const iceStats = { host: 0, srflx: 0, relay: 0 };
+    conn.onicecandidate = (e) => {
+      if(e.candidate && e.candidate.candidate){
+        const c = e.candidate.candidate;
+        if(c.includes(" typ host")) iceStats.host++;
+        else if(c.includes(" typ srflx")) iceStats.srflx++;
+        else if(c.includes(" typ relay")) iceStats.relay++;
+      }
+    };
+    conn.onicegatheringstatechange = () => {
+      logDebug("ICE gathering: " + conn.iceGatheringState);
+      if(conn.iceGatheringState === "complete"){
+        logDebug(`ICE candidates gathered — host:${iceStats.host} stun:${iceStats.srflx} relay:${iceStats.relay}`);
+      }
+    };
+    conn.oniceconnectionstatechange = () => logDebug("ICE connection state: " + conn.iceConnectionState);
+    conn.onsignalingstatechange = () => logDebug("Signaling state: " + conn.signalingState);
+
+    conn.ontrack = (event) => {
+      const remoteStream = event.streams[0];
+      if(!remoteStream) return;
       const vTracks = remoteStream.getVideoTracks().length;
       const aTracks = remoteStream.getAudioTracks().length;
-      logDebug(`Remote media stream received — video tracks: ${vTracks}, audio tracks: ${aTracks}`);
+      logDebug(`Remote track event — video tracks: ${vTracks}, audio tracks: ${aTracks}`);
 
       remoteStream.getTracks().forEach(track => {
-        logDebug(`Track [${track.kind}] readyState:${track.readyState} muted:${track.muted} enabled:${track.enabled}`);
-        track.onmute = () => logDebug(`⚠ Track [${track.kind}] MUTED — no data arriving from remote side`);
-        track.onunmute = () => logDebug(`✓ Track [${track.kind}] UNMUTED — data now arriving`);
-        track.onended = () => logDebug(`Track [${track.kind}] ENDED`);
+        logDebug(`Track [${track.kind}] readyState:${track.readyState} muted:${track.muted}`);
+        track.onmute = () => logDebug(`⚠ Track [${track.kind}] MUTED — no data arriving`);
+        track.onunmute = () => {
+          logDebug(`✓ Track [${track.kind}] UNMUTED — data now arriving`);
+          setCallStatus("Connected", true);
+          startTimer();
+          clearTimeout(window._stuckTimer);
+        };
       });
 
       if(remoteVideo.srcObject !== remoteStream) remoteVideo.srcObject = remoteStream;
-      remoteVideo.onloadedmetadata = () => {
-        logDebug(`Remote video element size: ${remoteVideo.videoWidth}x${remoteVideo.videoHeight}`);
-      };
+      remoteVideo.onloadedmetadata = () => logDebug(`Remote video size: ${remoteVideo.videoWidth}x${remoteVideo.videoHeight}`);
       remoteVideo.play().then(() => {
         logDebug("Remote video playing");
       }).catch((err) => {
@@ -523,197 +512,131 @@
       });
       hasRemoteVideo = true;
       remotePlaceholder.classList.add("hidden");
-      // A stream arriving is solid proof the call is actually connected —
-      // don't wait on connectionstatechange, which some browsers fire late or not at all.
-      setCallStatus("Connected", true);
-      startTimer();
-      clearTimeout(window._stuckTimer);
-    });
-
-    call.on("close", () => {
-      logDebug("Call closed by remote side");
-      setCallStatus("Call ended", false);
-      toast("The other person left the call");
-    });
-
-    call.on("error", (err) => {
-      logDebug("Call error: " + (err.type || err.message || err));
-      setCallStatus("Connection error", false);
-    });
-
-    // Watch the underlying RTCPeerConnection for real connection state,
-    // and log which kinds of ICE candidates are actually found (diagnostics).
-    const iceStats = { host: 0, srflx: 0, relay: 0 };
-    const watchPc = () => {
-      const rtcPc = call.peerConnection;
-      if(!rtcPc){ setTimeout(watchPc, 300); return; }
-      logDebug("RTCPeerConnection attached, watching state");
-      // Log current state immediately — it may have already changed before we attached listeners.
-      logDebug("Current ICE connection state: " + rtcPc.iceConnectionState);
-      logDebug("Current connection state: " + rtcPc.connectionState);
-
-      // Poll actual byte counts flowing through the connection — the only sure way to know
-      // if media is really moving, independent of whether the <video> element is rendering it.
-      let lastVideoBytes = null, lastAudioBytes = null;
-      let loggedInventory = false;
-      const statsInterval = setInterval(async () => {
-        if(!rtcPc || rtcPc.connectionState === "closed"){ clearInterval(statsInterval); return; }
-        try{
-          const stats = await rtcPc.getStats();
-          let vBytes = null, aBytes = null;
-          const inventory = [];
-          stats.forEach(r => {
-            if(r.type === "inbound-rtp"){
-              const kind = r.kind || r.mediaType || "?";
-              inventory.push(`${r.type}/${kind} bytesReceived=${r.bytesReceived}`);
-              if(kind === "video") vBytes = r.bytesReceived;
-              if(kind === "audio") aBytes = r.bytesReceived;
-            }
-          });
-          if(!loggedInventory){
-            logDebug("Stats reports found: " + (inventory.length ? inventory.join(" | ") : "NONE — no inbound-rtp reports at all"));
-            loggedInventory = true;
-          }
-          const vDelta = (lastVideoBytes !== null && vBytes !== null) ? vBytes - lastVideoBytes : null;
-          const aDelta = (lastAudioBytes !== null && aBytes !== null) ? aBytes - lastAudioBytes : null;
-          logDebug(`Bytes received — video: ${vBytes ?? "n/a"} (+${vDelta ?? "?"}), audio: ${aBytes ?? "n/a"} (+${aDelta ?? "?"})`);
-          if(vDelta === 0 && aDelta === 0){
-            logDebug("⚠ No new bytes flowing — media relay may be blocked despite a connected ICE pair");
-          }
-          lastVideoBytes = vBytes; lastAudioBytes = aBytes;
-        }catch(e){ logDebug("getStats() error: " + e.message); }
-      }, 3000);
-
-      rtcPc.onicecandidate = (e) => {
-        if(e.candidate && e.candidate.candidate){
-          const c = e.candidate.candidate;
-          if(c.includes(" typ host")) iceStats.host++;
-          else if(c.includes(" typ srflx")) iceStats.srflx++;
-          else if(c.includes(" typ relay")) iceStats.relay++;
-        }
-      };
-
-      rtcPc.onicegatheringstatechange = () => {
-        logDebug("ICE gathering: " + rtcPc.iceGatheringState);
-        if(rtcPc.iceGatheringState === "complete"){
-          logDebug(`ICE candidates — host:${iceStats.host} stun:${iceStats.srflx} relay:${iceStats.relay}`);
-          if(iceStats.relay === 0){
-            logDebug("⚠ No TURN relay candidates found — check credentials/network");
-          }
-        }
-      };
-
-      rtcPc.oniceconnectionstatechange = () => {
-        logDebug("ICE connection state: " + rtcPc.iceConnectionState);
-      };
-
-      rtcPc.onsignalingstatechange = () => {
-        logDebug("Signaling state: " + rtcPc.signalingState);
-      };
-
-      rtcPc.onconnectionstatechange = () => {
-        const state = rtcPc.connectionState;
-        logDebug("Connection state: " + state);
-        if(state === "connected"){ setCallStatus("Connected", true); startTimer(); clearTimeout(window._stuckTimer); }
-        else if(state === "disconnected"){ setCallStatus("Reconnecting…", false); }
-        else if(state === "failed"){
-          setCallStatus("Connection failed", false);
-          const detail = iceStats.relay > 0
-            ? "TURN relay was found but the connection still failed."
-            : "No TURN relay candidate was found — check TURN credentials/network.";
-          toast("Connection failed. " + detail);
-          logDebug("✗ FAILED. ICE counts — host:" + iceStats.host + " stun:" + iceStats.srflx + " relay:" + iceStats.relay);
-        }
-        else if(state === "closed"){ setCallStatus("Call ended", false); }
-      };
     };
-    watchPc();
+
+    conn.onconnectionstatechange = () => {
+      const state = conn.connectionState;
+      logDebug("Connection state: " + state);
+      if(state === "connected"){ setCallStatus("Connected", true); startTimer(); clearTimeout(window._stuckTimer); }
+      else if(state === "disconnected"){ setCallStatus("Reconnecting…", false); }
+      else if(state === "failed"){
+        setCallStatus("Connection failed", false);
+        toast("Connection failed. " + (iceStats.relay > 0 ? "Relay found but connection still failed." : "No relay candidate found — check network."));
+        logDebug("✗ FAILED. ICE counts — host:" + iceStats.host + " stun:" + iceStats.srflx + " relay:" + iceStats.relay);
+      }
+      else if(state === "closed"){ setCallStatus("Call ended", false); }
+    };
+
+    let lastVideoBytes = null, lastAudioBytes = null, loggedInventory = false;
+    const statsInterval = setInterval(async () => {
+      if(!conn || conn.connectionState === "closed"){ clearInterval(statsInterval); return; }
+      try{
+        const stats = await conn.getStats();
+        let vBytes = null, aBytes = null;
+        const inventory = [];
+        stats.forEach(r => {
+          if(r.type === "inbound-rtp"){
+            const kind = r.kind || r.mediaType || "?";
+            inventory.push(`${kind}:${r.bytesReceived}`);
+            if(kind === "video") vBytes = r.bytesReceived;
+            if(kind === "audio") aBytes = r.bytesReceived;
+          }
+        });
+        if(!loggedInventory){
+          logDebug("Stats reports: " + (inventory.length ? inventory.join(", ") : "NONE"));
+          loggedInventory = true;
+        }
+        const vDelta = (lastVideoBytes !== null && vBytes !== null) ? vBytes - lastVideoBytes : null;
+        const aDelta = (lastAudioBytes !== null && aBytes !== null) ? aBytes - lastAudioBytes : null;
+        logDebug(`Bytes — video:${vBytes ?? "n/a"}(+${vDelta ?? "?"}) audio:${aBytes ?? "n/a"}(+${aDelta ?? "?"})`);
+        lastVideoBytes = vBytes; lastAudioBytes = aBytes;
+      }catch(e){ logDebug("getStats() error: " + e.message); }
+    }, 3000);
+
+    return conn;
   }
 
   // ---------- CALLER FLOW ----------
   async function startCall(){
-    $("waitingStatus").textContent = "Setting up your room…";
+    $("waitingStatus").textContent = "Setting up your call…";
     $("waitingSub").textContent = "Getting camera and microphone ready";
-    $("codeDisplay").classList.add("hidden");
+    $("outCodeBlock").classList.add("hidden");
+    $("inCodeBlock").classList.add("hidden");
     showScreen("waiting");
     logDebug("Starting call as caller");
 
     await getMedia();
     logDebug("Media mode: " + mediaMode);
     role = "caller";
-    roomCode = genCode();
 
-    const iceServers = await getIceServers();
-    logDebug("Connecting to signaling broker as room " + roomCode);
-    peer = new Peer(ROOM_PREFIX + roomCode, { config: iceServers });
+    pc = createPeerConnection();
+    const offer = await pc.createOffer();
+    await pc.setLocalDescription(offer);
+    logDebug("Offer created, gathering ICE candidates…");
+    $("waitingStatus").textContent = "Preparing your call code…";
+    await waitIceGatheringComplete(pc);
 
-    peer.on("open", () => {
-      logDebug("✓ Connected to signaling broker successfully");
-      $("roomCodeText").textContent = roomCode;
-      $("codeDisplay").classList.remove("hidden");
-      $("waitingStatus").textContent = "Waiting for the other person…";
-      $("waitingSub").textContent = "Share this code with them so they can join";
-    });
+    const code = encodeDesc(pc.localDescription);
+    $("outCodeText").value = code;
+    $("outCodeLabel").textContent = "Your call code — send this to the other person";
+    $("outCodeBlock").classList.remove("hidden");
+    $("inCodeBlock").classList.remove("hidden");
+    $("waitingStatus").textContent = "Waiting for their reply code";
+    $("waitingSub").textContent = "Send the code above, then paste their reply below";
+    logDebug("✓ Call code ready (" + code.length + " chars)");
+  }
 
-    peer.on("call", (incomingCall) => {
-      logDebug("Incoming call received from other side");
-      incomingCall.answer(localStream || undefined);
-      attachCallHandlers(incomingCall);
+  async function connectWithAnswer(){
+    const raw = $("inCodeText").value.trim();
+    if(!raw){ toast("Paste the reply code first"); return; }
+    try{
+      const desc = decodeDesc(raw);
+      await pc.setRemoteDescription(new RTCSessionDescription(desc));
+      logDebug("✓ Reply code applied — connecting");
       $("waitingStatus").textContent = "Connecting…";
       enterCallScreen();
-    });
-
-    peer.on("disconnected", () => logDebug("⚠ Disconnected from signaling broker"));
-
-    peer.on("error", (err) => {
-      logDebug("✗ Peer error: " + err.type);
-      if(err.type === "unavailable-id"){
-        startCall();
-      } else {
-        toast("Connection error: " + err.type);
-      }
-    });
+    }catch(e){
+      logDebug("✗ Failed to apply reply code: " + e.message);
+      toast("That code looks invalid — ask them to resend it");
+    }
   }
 
   // ---------- CALLEE FLOW ----------
   async function joinCall(code){
-    if(!code || code.length < 4){ toast("Enter a valid room code"); return; }
-    roomCode = code.toUpperCase();
+    if(!code || code.length < 20){ toast("Paste a valid call code"); return; }
 
-    $("waitingStatus").textContent = "Connecting to that room…";
+    $("waitingStatus").textContent = "Setting up your reply…";
     $("waitingSub").textContent = "Getting camera and microphone ready";
-    $("codeDisplay").classList.add("hidden");
+    $("outCodeBlock").classList.add("hidden");
+    $("inCodeBlock").classList.add("hidden");
     showScreen("waiting");
-    logDebug("Joining room " + roomCode + " as callee");
+    logDebug("Joining call as callee");
 
     await getMedia();
     logDebug("Media mode: " + mediaMode);
     role = "callee";
 
-    const iceServers = await getIceServers();
-    peer = new Peer({ config: iceServers });
+    let offerDesc;
+    try{ offerDesc = decodeDesc(code); }
+    catch(e){ toast("That call code looks invalid"); showScreen("home"); return; }
 
-    peer.on("open", () => {
-      logDebug("✓ Connected to signaling broker, calling " + roomCode);
-      const call = peer.call(ROOM_PREFIX + roomCode, localStream || undefined);
-      if(!call){ logDebug("✗ peer.call() returned nothing"); toast("Couldn't start the call"); showScreen("home"); cleanupMedia(); return; }
-      attachCallHandlers(call);
-      $("waitingStatus").textContent = "Connecting…";
-      enterCallScreen();
-    });
+    pc = createPeerConnection();
+    await pc.setRemoteDescription(new RTCSessionDescription(offerDesc));
+    const answer = await pc.createAnswer();
+    await pc.setLocalDescription(answer);
+    logDebug("Answer created, gathering ICE candidates…");
+    $("waitingStatus").textContent = "Preparing your reply code…";
+    await waitIceGatheringComplete(pc);
 
-    peer.on("disconnected", () => logDebug("⚠ Disconnected from signaling broker"));
+    const replyCode = encodeDesc(pc.localDescription);
+    $("outCodeText").value = replyCode;
+    $("outCodeLabel").textContent = "Your reply code — send this back to them";
+    $("outCodeBlock").classList.remove("hidden");
+    $("waitingStatus").textContent = "Send this reply code back";
+    $("waitingSub").textContent = "The call will connect automatically once they enter it";
+    logDebug("✓ Reply code ready (" + replyCode.length + " chars)");
 
-    peer.on("error", (err) => {
-      logDebug("✗ Peer error: " + err.type);
-      if(err.type === "peer-unavailable"){
-        toast("No active room found with that code");
-        showScreen("home");
-        cleanupMedia();
-      } else {
-        toast("Connection error: " + err.type);
-      }
-    });
+    enterCallScreen();
   }
 
   // ---------- controls ----------
@@ -726,7 +649,6 @@
       ? '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 1a3 3 0 00-3 3v8a3 3 0 006 0V4a3 3 0 00-3-3z"/><path d="M19 10v2a7 7 0 01-14 0v-2M12 19v4M8 23h8"/></svg>'
       : '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 1l22 22"/><path d="M9 9v3a3 3 0 005.12 2.12M15 9.34V4a3 3 0 00-5.94-.6"/><path d="M19 10v2a7 7 0 01-11.03 5.71M5 10v2a7 7 0 001.5 4.36M12 19v4M8 23h8"/></svg>';
   }
-
   function toggleCam(){
     if(!localStream || localStream.getVideoTracks().length === 0){ toast("No camera available"); return; }
     camOn = !camOn;
@@ -736,8 +658,7 @@
 
   function cleanupMedia(){
     if(localStream){ localStream.getTracks().forEach(t=>t.stop()); localStream = null; }
-    if(mediaConn){ try{ mediaConn.close(); }catch(e){} mediaConn = null; }
-    if(peer){ try{ peer.destroy(); }catch(e){} peer = null; }
+    if(pc){ try{ pc.close(); }catch(e){} pc = null; }
     if(callTimerInterval){ clearInterval(callTimerInterval); callTimerInterval = null; }
     callSeconds = 0;
     $("callTimer").textContent = "00:00";
@@ -749,6 +670,8 @@
     hasRemoteVideo = false;
     micOn = true; camOn = true;
     mediaMode = "none";
+    $("inCodeText").value = "";
+    $("outCodeText").value = "";
   }
 
   function endCall(){
@@ -760,24 +683,23 @@
   // ---------- events ----------
   $("startCallBtn").addEventListener("click", startCall);
   $("joinCallBtn").addEventListener("click", () => joinCall($("joinCodeInput").value.trim()));
-  $("joinCodeInput").addEventListener("keyup", (e) => {
-    e.target.value = e.target.value.toUpperCase();
-    if(e.key === "Enter") joinCall(e.target.value.trim());
-  });
+  $("connectBtn").addEventListener("click", connectWithAnswer);
   $("cancelWaitBtn").addEventListener("click", () => { cleanupMedia(); showScreen("home"); });
-  $("copyCodeBtn").addEventListener("click", () => {
-    navigator.clipboard.writeText(roomCode).then(()=>toast("Code copied")).catch(()=>toast("Copy this code: " + roomCode));
+  $("copyOutCodeBtn").addEventListener("click", () => {
+    const code = $("outCodeText").value;
+    navigator.clipboard.writeText(code).then(()=>toast("Code copied")).catch(()=>{
+      $("outCodeText").select();
+      toast("Select-and-copy the code above");
+    });
   });
   $("toggleMicBtn").addEventListener("click", toggleMic);
   $("toggleCamBtn").addEventListener("click", toggleCam);
   $("endCallBtn").addEventListener("click", endCall);
-  $("debugToggle").addEventListener("click", () => {
-    $("debugPanel").classList.toggle("hidden");
-  });
+  $("debugToggle").addEventListener("click", () => { $("debugPanel").classList.toggle("hidden"); });
   $("tapToPlayBtn").addEventListener("click", () => {
     $("tapToPlayBtn").classList.add("hidden");
     remoteVideo.play().then(() => {
-      logDebug(`Manual play succeeded — readyState:${remoteVideo.readyState} size:${remoteVideo.videoWidth}x${remoteVideo.videoHeight} paused:${remoteVideo.paused}`);
+      logDebug(`Manual play succeeded — size:${remoteVideo.videoWidth}x${remoteVideo.videoHeight}`);
     }).catch((err) => {
       logDebug("⚠ Manual play still blocked: " + err.name);
     });
