@@ -278,14 +278,12 @@
     <video id="localVideo" autoplay playsinline muted></video>
 
     <div class="top-bar">
-      <div class="call-status" id="debugToggle" style="cursor:pointer;">
+      <div class="call-status">
         <span class="status-dot" id="callStatusDot"></span>
         <span id="callStatusText">Connecting…</span>
       </div>
       <div class="timer hidden" id="callTimer">00:00</div>
     </div>
-
-    <div id="debugPanel" class="hidden"></div>
 
     <div class="controls">
       <button class="ctrl-btn" id="toggleMicBtn" title="Mute">
@@ -303,6 +301,9 @@
   </div>
 
 </div>
+
+<button id="debugToggle" style="position:fixed; bottom:16px; right:16px; z-index:50; background:rgba(0,0,0,.6); border:1px solid var(--border); color:#8FE3C4; font-family:'SF Mono',SFMono-Regular,Consolas,monospace; font-size:11px; padding:6px 10px; border-radius:8px; cursor:pointer;">Debug log</button>
+<div id="debugPanel" class="hidden" style="position:fixed; bottom:56px; right:16px; left:16px; max-width:480px; margin-left:auto; max-height:50vh; overflow-y:auto; background:rgba(0,0,0,.85); border:1px solid var(--border); border-radius:10px; padding:10px 12px; font-family:'SF Mono',SFMono-Regular,Consolas,monospace; font-size:11px; line-height:1.6; color:#8FE3C4; z-index:50; backdrop-filter:blur(6px);"></div>
 
 <script>
 (function(){
@@ -570,20 +571,27 @@
     role = "caller";
 
     pc = createPeerConnection();
-    const offer = await pc.createOffer();
-    await pc.setLocalDescription(offer);
-    logDebug("Offer created, gathering ICE candidates…");
-    $("waitingStatus").textContent = "Preparing your call code…";
-    await waitIceGatheringComplete(pc);
+    try{
+      const offer = await pc.createOffer();
+      await pc.setLocalDescription(offer);
+      logDebug("Offer created, gathering ICE candidates…");
+      $("waitingStatus").textContent = "Preparing your call code…";
+      await waitIceGatheringComplete(pc);
 
-    const code = encodeDesc(pc.localDescription);
-    $("outCodeText").value = code;
-    $("outCodeLabel").textContent = "Your call code — send this to the other person";
-    $("outCodeBlock").classList.remove("hidden");
-    $("inCodeBlock").classList.remove("hidden");
-    $("waitingStatus").textContent = "Waiting for their reply code";
-    $("waitingSub").textContent = "Send the code above, then paste their reply below";
-    logDebug("✓ Call code ready (" + code.length + " chars)");
+      const code = encodeDesc(pc.localDescription);
+      $("outCodeText").value = code;
+      $("outCodeLabel").textContent = "Your call code — send this to the other person";
+      $("outCodeBlock").classList.remove("hidden");
+      $("inCodeBlock").classList.remove("hidden");
+      $("waitingStatus").textContent = "Waiting for their reply code";
+      $("waitingSub").textContent = "Send the code above, then paste their reply below";
+      logDebug("✓ Call code ready (" + code.length + " chars)");
+    }catch(e){
+      logDebug("✗ Failed to create call code: " + e.message);
+      toast("Something went wrong setting up the call: " + e.message, 5000);
+      $("waitingStatus").textContent = "Failed to set up the call";
+      $("waitingSub").textContent = e.message;
+    }
   }
 
   async function connectWithAnswer(){
@@ -621,22 +629,29 @@
     catch(e){ toast("That call code looks invalid"); showScreen("home"); return; }
 
     pc = createPeerConnection();
-    await pc.setRemoteDescription(new RTCSessionDescription(offerDesc));
-    const answer = await pc.createAnswer();
-    await pc.setLocalDescription(answer);
-    logDebug("Answer created, gathering ICE candidates…");
-    $("waitingStatus").textContent = "Preparing your reply code…";
-    await waitIceGatheringComplete(pc);
+    try{
+      await pc.setRemoteDescription(new RTCSessionDescription(offerDesc));
+      const answer = await pc.createAnswer();
+      await pc.setLocalDescription(answer);
+      logDebug("Answer created, gathering ICE candidates…");
+      $("waitingStatus").textContent = "Preparing your reply code…";
+      await waitIceGatheringComplete(pc);
 
-    const replyCode = encodeDesc(pc.localDescription);
-    $("outCodeText").value = replyCode;
-    $("outCodeLabel").textContent = "Your reply code — send this back to them";
-    $("outCodeBlock").classList.remove("hidden");
-    $("waitingStatus").textContent = "Send this reply code back";
-    $("waitingSub").textContent = "The call will connect automatically once they enter it";
-    logDebug("✓ Reply code ready (" + replyCode.length + " chars)");
+      const replyCode = encodeDesc(pc.localDescription);
+      $("outCodeText").value = replyCode;
+      $("outCodeLabel").textContent = "Your reply code — send this back to them";
+      $("outCodeBlock").classList.remove("hidden");
+      $("waitingStatus").textContent = "Send this reply code back";
+      $("waitingSub").textContent = "The call will connect automatically once they enter it";
+      logDebug("✓ Reply code ready (" + replyCode.length + " chars)");
 
-    enterCallScreen();
+      enterCallScreen();
+    }catch(e){
+      logDebug("✗ Failed to create reply code: " + e.message);
+      toast("Something went wrong: " + e.message, 5000);
+      $("waitingStatus").textContent = "Failed to join the call";
+      $("waitingSub").textContent = e.message;
+    }
   }
 
   // ---------- controls ----------
