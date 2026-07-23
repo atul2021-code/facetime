@@ -436,7 +436,7 @@
     return JSON.parse(atob(code.trim()));
   }
 
-  function waitIceGatheringComplete(conn, timeoutMs=8000){
+  function waitIceGatheringComplete(conn, timeoutMs=30000){
     return new Promise((resolve) => {
       if(conn.iceGatheringState === "complete"){ resolve(); return; }
       const check = () => {
@@ -576,6 +576,7 @@
       await pc.setLocalDescription(offer);
       logDebug("Offer created, gathering ICE candidates…");
       $("waitingStatus").textContent = "Preparing your call code…";
+      $("waitingSub").textContent = "This can take up to 30 seconds on some networks";
       await waitIceGatheringComplete(pc);
 
       const code = encodeDesc(pc.localDescription);
@@ -635,6 +636,7 @@
       await pc.setLocalDescription(answer);
       logDebug("Answer created, gathering ICE candidates…");
       $("waitingStatus").textContent = "Preparing your reply code…";
+      $("waitingSub").textContent = "This can take up to 30 seconds on some networks";
       await waitIceGatheringComplete(pc);
 
       const replyCode = encodeDesc(pc.localDescription);
